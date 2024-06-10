@@ -5,6 +5,9 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import ThemeToggler from "./ThemeToggler";
 import menuData from "./menuData";
+import { useCookies } from "react-cookie";
+import axios from "axios";
+import "../../app/axios.js";
 
 const Header = () => {
   // Navbar toggle
@@ -15,6 +18,8 @@ const Header = () => {
 
   // Sticky Navbar
   const [sticky, setSticky] = useState(false);
+  const [isCookie, setIsCookie] = useState(false);
+  const [cookies, setCookie, removeCookie] = useCookies(["isLoggedIn"]);
   const handleStickyNavbar = () => {
     if (window.scrollY >= 80) {
       setSticky(true);
@@ -22,6 +27,13 @@ const Header = () => {
       setSticky(false);
     }
   };
+
+  useEffect(() => {
+    if (cookies && cookies.isLoggedIn) {
+      setIsCookie(true);
+    }
+  }, []);
+
   useEffect(() => {
     window.addEventListener("scroll", handleStickyNavbar);
   });
@@ -38,12 +50,23 @@ const Header = () => {
 
   const usePathName = usePathname();
 
+  const handleLogout = async () => {
+    try {
+      await axios.post("/auth/logout", {
+        token: cookies.isLoggedIn.token,
+      });
+      removeCookie("isLoggedIn");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <>
       <header
         className={`header left-0 top-0 z-40 flex w-full items-center ${
           sticky
-            ? "dark:bg-gray-dark dark:shadow-sticky-dark fixed z-[9999] bg-white !bg-opacity-80 shadow-sticky backdrop-blur-sm transition"
+            ? "fixed z-[9999] bg-white !bg-opacity-80 shadow-sticky backdrop-blur-sm transition dark:bg-gray-dark dark:shadow-sticky-dark"
             : "absolute bg-transparent"
         }`}
       >
@@ -57,17 +80,17 @@ const Header = () => {
                 } `}
               >
                 <Image
-                  src="/images/logo/logo-2.svg"
+                  src="/images/logo/Idenion.png"
                   alt="logo"
-                  width={140}
-                  height={30}
+                  width={160}
+                  height={40}
                   className="w-full dark:hidden"
                 />
                 <Image
-                  src="/images/logo/logo.svg"
+                  src="/images/logo/Idenion.png"
                   alt="logo"
-                  width={140}
-                  height={30}
+                  width={160}
+                  height={40}
                   className="hidden w-full dark:block"
                 />
               </Link>
@@ -158,22 +181,35 @@ const Header = () => {
                   </ul>
                 </nav>
               </div>
-              <div className="flex items-center justify-end pr-16 lg:pr-0">
-                <Link
-                  href="/signin"
-                  className="hidden px-7 py-3 text-base font-medium text-dark hover:opacity-70 dark:text-white md:block"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/signup"
-                  className="ease-in-up shadow-btn hover:shadow-btn-hover hidden rounded-sm bg-primary px-8 py-3 text-base font-medium text-white transition duration-300 hover:bg-opacity-90 md:block md:px-9 lg:px-6 xl:px-9"
-                >
-                  Sign Up
-                </Link>
-                <div>
-                  <ThemeToggler />
+
+              {!isCookie ? (
+                <div className="flex items-center justify-end pr-16 lg:pr-0">
+                  <Link
+                    href="/signin"
+                    className="hidden px-7 py-3 text-base font-medium text-dark hover:opacity-70 dark:text-white md:block"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="ease-in-up hidden rounded-sm bg-primary px-8 py-3 text-base font-medium text-white shadow-btn transition duration-300 hover:bg-opacity-90 hover:shadow-btn-hover md:block md:px-9 lg:px-6 xl:px-9"
+                  >
+                    Sign Up
+                  </Link>
                 </div>
+              ) : (
+                <div className="flex items-center justify-end pr-16 lg:pr-0">
+                  <a
+                    onClick={() => handleLogout}
+                    className="ease-in-up hidden rounded-sm bg-primary px-8 py-3 text-base font-medium text-white shadow-btn transition duration-300 hover:bg-opacity-90 hover:shadow-btn-hover md:block md:px-9 lg:px-6 xl:px-9"
+                  >
+                    Sign out
+                  </a>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end pr-16 lg:pr-0">
+                <ThemeToggler />
               </div>
             </div>
           </div>

@@ -15,20 +15,23 @@ const filterMiddleware = async (req, res, next) => {
     sort,
   } = req.query;
   var cnt = 1;
-  var sql = "SELECT * FROM ideas WHERE";
+  var sql = "SELECT * FROM ideas";
   var inputs = [];
   if (name) {
+    if (cnt == 1) sql += " WHERE";
     sql += " LOWER(name) LIKE '%' || $" + cnt + " || '%'";
     cnt++;
     inputs.push(name.toLowerCase());
   }
   if (author) {
+    if (cnt == 1) sql += " WHERE";
     if (cnt > 1) sql += " AND";
     sql += " LOWER(author) LIKE '%' || $" + cnt + " || '%'";
     cnt++;
     inputs.push(author.toLowerCase());
   }
   if (areaOfInterest) {
+    if (cnt == 1) sql += " WHERE";
     if (cnt > 1) sql += " AND";
     JSON.parse(areaOfInterest).forEach((item, index) => {
       if (index > 0) sql += " AND";
@@ -38,15 +41,19 @@ const filterMiddleware = async (req, res, next) => {
     });
   }
   if (rating) {
+    if (cnt == 1) sql += " WHERE";
     if (cnt > 1) sql += " AND";
     sql += " rating >= " + rating;
+    cnt++;
   }
   if (numberOfRating) {
+    if (cnt == 1) sql += " WHERE";
     if (cnt > 1) sql += " AND";
     sql += " numberofrating >= " + numberOfRating;
+    cnt++;
   }
   if (sort) {
-    sql += " ORDER BY publishdate " + sort;
+    sql += " ORDER BY publishdate DESC";
   }
   try {
     var data = await db.query(sql, inputs);
@@ -54,7 +61,6 @@ const filterMiddleware = async (req, res, next) => {
     for (const item of data.rows) {
       const urlForThumbnail = await getObjectUrl("idenion", item.thumbnail);
       const urlForVideo = await getObjectUrl("idenion", item.videourl);
-
       const obj = {
         name: item.name,
         description: item.description,
@@ -66,12 +72,13 @@ const filterMiddleware = async (req, res, next) => {
         ideaId: item.id,
         userId: item.userId,
         thumbnailUrl: urlForThumbnail,
+        publishDate: item.publishdate,
       };
-
       sendData.push(obj);
     }
+    req.nbHits = sendData.length;
     const pageNew = page ? Number(page) : 1;
-    const limitNew = limit ? Number(limit) : 10;
+    const limitNew = limit ? Number(limit) : 6;
     const skip = (pageNew - 1) * limitNew;
     sendData = sendData.splice(skip, limitNew);
     req.finalData = sendData;

@@ -32,6 +32,7 @@ const getS3GetObjectUrl = async (req, res, next) => {
       ideaId: idea.rows[0].id,
       userId: idea.rows[0].userId,
       thumbnailUrl: urlForThumbnail,
+      publishDate: idea.rows[0].publishdate,
     };
     req.idea = sendIdea;
     next();

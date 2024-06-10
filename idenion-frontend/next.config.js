@@ -9,6 +9,13 @@ const nextConfig = {
         port: "",
       },
     ],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "idenion.s3.ap-south-1.amazonaws.com",
+        port: "",
+      },
+    ],
   },
 };
 

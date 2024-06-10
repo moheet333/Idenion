@@ -60,11 +60,77 @@ const verify = async (req, res) => {
     const newToken = jwt.sign({ userId: data.userId }, process.env.JWT, {
       expiresIn: "30d",
     });
-    res.cookie(
-      "user",
-      { userId: data.userId, token: newToken },
-      { maxAge: 30 * 24 * 60 * 60 * 1000 }
-    );
+    if (process.env.NODE_ENV === "development") {
+      res.cookie(
+        "user",
+        { userId: data.userId, token: newToken },
+        {
+          // can only be accessed by server requests
+          httpOnly: true,
+          // path = where the cookie is valid
+          path: "/",
+          // domain = what domain the cookie is valid on
+          domain: "localhost",
+          // secure = only send cookie over https
+          secure: false,
+          // sameSite = only send cookie if the request is coming from the same origin
+          sameSite: "lax", // "strict" | "lax" | "none" (secure must be true)
+          // maxAge = how long the cookie is valid for in milliseconds
+          maxAge: 30 * 24 * 60 * 60 * 1000, // 1 hour
+        }
+      );
+      res.cookie(
+        "isLoggedIn",
+        { userId: data.userId, token: newToken },
+        {
+          // can only be accessed by server requests
+          // path = where the cookie is valid
+          path: "/",
+          // domain = what domain the cookie is valid on
+          domain: "localhost",
+          // secure = only send cookie over https
+          secure: false,
+          // sameSite = only send cookie if the request is coming from the same origin
+          sameSite: "lax", // "strict" | "lax" | "none" (secure must be true)
+          // maxAge = how long the cookie is valid for in milliseconds
+          maxAge: 30 * 24 * 60 * 60 * 1000, // 1 hour
+        }
+      );
+    }
+
+    if (process.env.NODE_ENV === "production") {
+      res.cookie(
+        "user",
+        { userId: data.userId, token: newToken },
+        {
+          // can only be accessed by server requests
+          httpOnly: true,
+          // path = where the cookie is valid
+          path: "/",
+          // secure = only send cookie over https
+          secure: true,
+          // sameSite = only send cookie if the request is coming from the same origin
+          sameSite: "none", // "strict" | "lax" | "none" (secure must be true)
+          // maxAge = how long the cookie is valid for in milliseconds
+          maxAge: 30 * 24 * 60 * 60 * 1000, // 1 hour
+        }
+      );
+      res.cookie(
+        "isLoggedIn",
+        { userId: data.userId, token: newToken },
+        {
+          // can only be accessed by server requests
+          // path = where the cookie is valid
+          path: "/",
+          // domain = what domain the cookie is valid on
+          secure: true,
+          // sameSite = only send cookie if the request is coming from the same origin
+          sameSite: "none", // "strict" | "lax" | "none" (secure must be true)
+          // maxAge = how long the cookie is valid for in milliseconds
+          maxAge: 30 * 24 * 60 * 60 * 1000, // 1 hour
+        }
+      );
+    }
   } catch (error) {
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -75,8 +141,22 @@ const verify = async (req, res) => {
   );
 };
 
+const logout = (req, res) => {
+  const { token } = req.body;
+  try {
+    jwt.verify(token, process.env.JWT);
+    res.clearCookie("user");
+    return res.status(StatusCodes.OK).json({ message: "Logout success" });
+  } catch (error) {
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Invalid Token" });
+  }
+};
+
 module.exports = {
   login,
   signup,
   verify,
+  logout,
 };

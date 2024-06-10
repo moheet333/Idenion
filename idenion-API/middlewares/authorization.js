@@ -2,11 +2,13 @@ const jwt = require("jsonwebtoken");
 const { AuthorizationError } = require("../errors");
 
 const authorizationMiddleware = async (req, res, next) => {
-  const requestHeader = req.headers.authorization;
-  if (!requestHeader || !requestHeader.startsWith("Bearer ")) {
+  if (!req.cookies.user) {
     throw new AuthorizationError("No Token");
   }
-  const token = requestHeader.split(" ")[1];
+  if (typeof req.cookies.user === "string") {
+    req.cookies.user = JSON.parse(req.cookies.user);
+  }
+  const token = req.cookies.user.token;
   try {
     const payload = jwt.verify(token, process.env.JWT);
     req.user = { userId: payload.userId };

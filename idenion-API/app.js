@@ -10,7 +10,24 @@ const bodyParser = require("body-parser");
 // middleware
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(cors());
+if (process.env.NODE_ENV === "development") {
+  app.use(
+    cors({
+      origin: "http://localhost:3000",
+      credentials: true,
+    })
+  );
+}
+
+if (process.env.NODE_ENV === "production") {
+  app.use(
+    cors({
+      origin: "https://xyz.onrender.com",
+      credentials: true,
+    })
+  );
+}
+
 app.use(cookieParser());
 
 // created middleware

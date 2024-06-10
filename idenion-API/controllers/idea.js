@@ -3,16 +3,27 @@ const { StatusCodes } = require("http-status-codes");
 const { BadRequestError } = require("../errors");
 
 const filterIdeas = async (req, res) => {
-  res.status(StatusCodes.OK).json(req.finalData);
+  res.status(StatusCodes.OK).json({
+    message: "success in fetching data",
+    nbHits: req.nbHits,
+    ideas: req.finalData,
+  });
 };
 
 const getSingleIdea = async (req, res) => {
   res.status(StatusCodes.CREATED).json(req.idea);
 };
 
+const getAllIdeas = async (req, res) => {
+  res.status(StatusCodes.OK).json({
+    message: "success in fetching data",
+    nbHits: req.nbHits,
+    ideas: req.finalData,
+  });
+};
+
 const publishIdea = async (req, res) => {
   const { name, description, areaOfInterest } = req.body;
-  var { author } = req.body;
   const userId = req.user.userId;
   if (
     !name ||
@@ -25,6 +36,16 @@ const publishIdea = async (req, res) => {
     !req.urlForThumbnail
   ) {
     throw new BadRequestError("Please provide all the credentials");
+  }
+  const authorSql = "SELECT * FROM users WHERE id = $1";
+  var author = "";
+  try {
+    const dataAuthor = await db.query(authorSql, [userId]);
+    author = dataAuthor.rows[0].name;
+  } catch (error) {
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Error while fetching from database" });
   }
   if (!author) {
     author = null;
@@ -56,6 +77,7 @@ const publishIdea = async (req, res) => {
 
 module.exports = {
   publishIdea,
+  getAllIdeas,
   getSingleIdea,
   filterIdeas,
 };

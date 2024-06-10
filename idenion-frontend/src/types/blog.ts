@@ -1,15 +1,13 @@
-type Author = {
-  name: string;
-  image: string;
-  designation: string;
-};
-
 export type Blog = {
-  id: number;
-  title: string;
-  paragraph: string;
-  image: string;
-  author: Author;
-  tags: string[];
+  name: string;
+  description: string;
+  videoUrl: string;
+  author: string | null;
+  areaOfInterest: string[];
+  rating: number;
+  numberOfRating: number;
+  ideaId: number;
+  userId: number;
+  thumbnailUrl: string;
   publishDate: string;
 };
