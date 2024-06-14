@@ -1,0 +1,26 @@
+version: "3"
+services:
+  db:
+    image: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: moheet@333
+      POSTGRES_USER: postgres
+      POSTGRES_DB: idenion
+    volumes:
+      - ./createDb.sql:/docker-entrypoint-initdb.d/createDb.sql
+    
+  app:
+    depends_on:
+      - db
+    image: idenion-node-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_HOST=db
+    ports:
+      - 5000:5000
+
+volumes:
+  db:

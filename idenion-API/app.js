@@ -39,6 +39,11 @@ const userRouter = require("./routers/user.js");
 const ideaRouter = require("./routers/idea.js");
 const commentRouter = require("./routers/comment.js");
 
+// test route
+app.get("/", (req,res) => {
+  res.send("This is the Idenion API.")
+})
+
 // routers
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/user", authorizationMiddleware, userRouter);

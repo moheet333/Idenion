@@ -2,9 +2,9 @@ const pg = require("pg");
 
 const db = new pg.Client({
   user: "postgres",
-  host: "localhost",
+  host: process.env.POSTGRES_HOST,
   database: "idenion",
-  password: process.env.POSTGRESQL_PASSWORD,
+  password: "moheet@333",
   port: 5432,
 });
 
